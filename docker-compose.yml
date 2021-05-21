@@ -1,0 +1,50 @@
+version: '3'
+services:
+  doc_web:
+    build: ./docker/web
+    container_name: doc_web
+    ports:
+      - "80:80"
+      - "44356:443"
+    volumes:
+      - ./admin.mastretch.com:/var/www/html/
+      - ./local/web:/mnt/local
+    environment:
+      TZ: "Asia/Tokyo"
+    depends_on:
+      - doc_db
+    tty: true
+    stdin_open: true
+    privileged: true
+    working_dir: /home/katsuragawa
+
+  doc_db:
+    build: ./docker/db
+    container_name: doc_db
+    ports:
+      - "3305:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./local/db:/mnt/local
+    tty: true
+    #command: bash -c "bash /docker/db/files/entry.sh && /bin/bash"
+    environment:
+      TZ: "Asia/Tokyo"
+    stdin_open: true
+    privileged: true
+
+  doc_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: doc_phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=test_user
+      - PMA_PASSWORD=tointoin12
+    links:
+      - doc_db
+    ports:
+      - 4444:80
+
+volumes:
+  dbdata:
